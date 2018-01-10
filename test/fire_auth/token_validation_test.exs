@@ -12,11 +12,17 @@ defmodule FireAuth.TokenValidationTest do
   @tag :capture_log
   test "valid_token returns correct content" do
     expected_result = %{
-      email: nil, 
-      email_verified: nil, 
-      id: "8nin8EPAQ3TMgHxHXJetMtGcHle2",
-      name: nil, 
-      provider_id: "anonymous"
+      "aud" => "nada-preview",
+      "auth_time" => 1503345547,
+      "exp" => 1503354083,
+      "firebase" => %{
+        "identities" => %{},
+        "sign_in_provider" => "anonymous"
+      },
+      "iat" => 1503350483,
+      "iss" => "https://securetoken.google.com/nada-preview",
+      "provider_id" => "anonymous", "sub" => "8nin8EPAQ3TMgHxHXJetMtGcHle2",
+      "user_id" => "8nin8EPAQ3TMgHxHXJetMtGcHle2"
     }
 
     assert {:ok, expected_result} == TokenValidation.validate_token(@valid_token)
@@ -24,7 +30,7 @@ defmodule FireAuth.TokenValidationTest do
 
   @tag :capture_log
   test "expired_token returns error" do
-    assert {:error, "Token claims are invalid. (The token might be  experienced or the project_id might be wrong)"} == TokenValidation.validate_token(@expired_token)
+    assert {:error, "Token claims are invalid. (The token might be expired or the project_id might be wrong)"} == TokenValidation.validate_token(@expired_token)
   end
 
   @tag :capture_log

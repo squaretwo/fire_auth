@@ -28,6 +28,14 @@ defmodule FireAuthTest do
       }
     end
 
+    def load_user(%{"sub" => "8nin8EPAQ3TMgHxHXJetMtGcHle2"}) do
+      %{
+        name: "some name",
+        id: "8nin8EPAQ3TMgHxHXJetMtGcHle2",
+        groups: ["manager"]
+      }
+    end
+
     def load_groups(_info, %{groups: groups}) do
       groups
     end

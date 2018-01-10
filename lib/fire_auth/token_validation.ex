@@ -24,15 +24,9 @@ defmodule FireAuth.TokenValidation do
 
     with {:ok, claims} <- verify_token(token, header) do
       if check_token_claims(claims) do
-        {:ok, %{
-          name: claims["name"],
-          id: claims["sub"],
-          email: claims["email"],
-          email_verified: claims["email_verified"],
-          provider_id: claims["provider_id"]
-        }}
+        {:ok, claims}
       else
-        {:error, "Token claims are invalid. (The token might be  experienced or the project_id might be wrong)"}
+        {:error, "Token claims are invalid. (The token might be expired or the project_id might be wrong)"}
       end
     end
   end
