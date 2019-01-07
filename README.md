@@ -32,6 +32,12 @@ config :fire_auth,
   project_id: "project-id"
 ```
 
+or if you have multiple projects (not sure if this is really legal...):
+```elixir
+config :fire_auth,
+  project_ids: ["project-id", "project-id-2"]
+```
+
 Add the following plug to validate the id token.
 ```elixir
 plug FireAuth

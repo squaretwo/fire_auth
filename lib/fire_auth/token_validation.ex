@@ -41,8 +41,10 @@ defmodule FireAuth.TokenValidation do
 
   defp check_token_claims_exp(claims), do: Util.current_time() <= claims["exp"]
   defp check_token_claims_iat(claims), do: Util.current_time() >= claims["iat"]
-  defp check_token_claims_aud(claims), do: project_id() == claims["aud"]
-  defp check_token_claims_iss(claims), do: "https://securetoken.google.com/#{project_id()}" == claims["iss"]
+  defp check_token_claims_aud(claims), do: claims["aud"] in project_ids()
+  defp check_token_claims_iss(claims) do
+    claims["iss"] in Enum.map(project_ids(), & "https://securetoken.google.com/#{&1}")
+  end
 
   # verifies a token using the keybase fetched from firebase.
   # returns
@@ -90,8 +92,13 @@ defmodule FireAuth.TokenValidation do
     :public_key.pkix_decode_cert(cert_entry, :otp)
   end
 
-  defp project_id() do
-    Application.get_env(:fire_auth, :project_id) ||
-      raise ":fire_auth, :project_id not set! Please add it to your config file."
+  defp project_ids() do
+    case Application.get_env(:fire_auth, :project_id) do
+      nil ->
+        Application.get_env(:fire_auth, :project_ids) ||
+          raise ":fire_auth, :project_id not set! Please add it to your config file."
+
+      project_id -> [project_id]
+    end
   end
 end
