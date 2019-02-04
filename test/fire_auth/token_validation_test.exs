@@ -29,9 +29,8 @@ defmodule FireAuth.TokenValidationTest do
   end
 
   @tag :capture_log
-  test "valid_token supports multiple project ids" do
+  test "pass project_id to valid_token" do
     Application.put_env(:fire_auth, :project_id, nil)
-    Application.put_env(:fire_auth, :project_ids, ["foo", "nada-preview"])
     expected_result = %{
       "aud" => "nada-preview",
       "auth_time" => 1503345547,
@@ -46,7 +45,7 @@ defmodule FireAuth.TokenValidationTest do
       "user_id" => "8nin8EPAQ3TMgHxHXJetMtGcHle2"
     }
 
-    assert {:ok, expected_result} == TokenValidation.validate_token(@valid_token)
+    assert {:ok, expected_result} == TokenValidation.validate_token(@valid_token, project_id: "nada-preview")
   end
 
   @tag :capture_log

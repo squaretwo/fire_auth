@@ -18,12 +18,13 @@ defmodule FireAuth.TokenValidation do
   {:error, error_message}
   is returned.
   """
-  def validate_token(token_string) do
+  def validate_token(token_string, opts \\ []) do
+    project_id = Keyword.get(opts, :project_id, project_id())
     token = Joken.token(token_string)
     header = Joken.peek_header(token)
 
     with {:ok, claims} <- verify_token(token, header) do
-      if check_token_claims(claims) do
+      if check_token_claims(claims, project_id) do
         {:ok, claims}
       else
         {:error, "Token claims are invalid. (The token might be expired or the project_id might be wrong)"}
@@ -32,18 +33,18 @@ defmodule FireAuth.TokenValidation do
   end
 
   # checks that all requirements are met for the token claims
-  defp check_token_claims(claims) do
+  defp check_token_claims(claims, project_id) do
     check_token_claims_exp(claims) &&
     check_token_claims_iat(claims) &&
-    check_token_claims_aud(claims) &&
-    check_token_claims_iss(claims)
+    check_token_claims_aud(claims, project_id) &&
+    check_token_claims_iss(claims, project_id)
   end
 
   defp check_token_claims_exp(claims), do: Util.current_time() <= claims["exp"]
   defp check_token_claims_iat(claims), do: Util.current_time() >= claims["iat"]
-  defp check_token_claims_aud(claims), do: claims["aud"] in project_ids()
-  defp check_token_claims_iss(claims) do
-    claims["iss"] in Enum.map(project_ids(), & "https://securetoken.google.com/#{&1}")
+  defp check_token_claims_aud(claims, project_id), do: claims["aud"] == project_id
+  defp check_token_claims_iss(claims, project_id) do
+    claims["iss"] == "https://securetoken.google.com/#{project_id}"
   end
 
   # verifies a token using the keybase fetched from firebase.
@@ -92,13 +93,7 @@ defmodule FireAuth.TokenValidation do
     :public_key.pkix_decode_cert(cert_entry, :otp)
   end
 
-  defp project_ids() do
-    case Application.get_env(:fire_auth, :project_id) do
-      nil ->
-        Application.get_env(:fire_auth, :project_ids) ||
-          raise ":fire_auth, :project_id not set! Please add it to your config file."
-
-      project_id -> [project_id]
-    end
+  defp project_id() do
+    Application.get_env(:fire_auth, :project_id)
   end
 end
